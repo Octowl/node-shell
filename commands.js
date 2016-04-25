@@ -6,6 +6,13 @@ function output(err, str) {
     process.stdout.write('\nTYPE OVER HERE!!! > ');
 }
 
+function fileContentHandler(file, lineModFunc) {
+    fs.readFile(file, 'utf8', function(err,lines){
+        lines = lineModFunc(lines.split('\n')).join('\n');
+        output(err, lines);
+    });
+}
+
 module.exports = {
     'pwd': function () {
         output(null, process.cwd());
@@ -23,29 +30,25 @@ module.exports = {
     },
     'head': function (file) {
         var n = 5;
-        file = file[0];
-        fs.readFile(file, 'utf8', function (err, str) {
-            output(err, str.split('\n').slice(0, n).join('\n'));
+        fileContentHandler(file[0], function(lines){
+            return lines.slice(0, n);
         });
     },
     'tailorswift': function (file) {
         var n = 5;
-        file = file[0];
-        fs.readFile(file, 'utf8', function (err, str) {
-            output(err, str.split('\n').slice(-n).join('\n'));
+        fileContentHandler(file[0], function(lines){
+            return lines.slice(-n);
         });
     },
     'sortyMcSortface': function (file, unique) {
-        file = file[0];
-        fs.readFile(file, 'utf8', function (err, str) {
-            var lines = str.split('\n').sort()
+        fileContentHandler(file[0], function(lines){
+            lines = lines.sort();
             if (unique) {
                 lines = lines.filter(function (line, i) {
                     return i === 0 ? true : line !== lines[i - 1];
                 });
             }
-            lines = lines.join('\n');
-            output(err, lines);
+            return lines;
         });
     },
     //In Britannia the toilette is referred to as a 'WC' (Water Closet)
