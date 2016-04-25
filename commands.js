@@ -1,13 +1,18 @@
 var fs = require('fs');
+var request = require('request');
+
+var STDOUT = process.stdout;
+
+STDOUT.on('finish', output);
 
 function output(err, str) {
     if (err) throw err;
-    process.stdout.write(str);
-    process.stdout.write('\nTYPE OVER HERE!!! > ');
+    if (str) STDOUT.write(str);
+    STDOUT.write('\nTYPE OVER HERE!!! > ');
 }
 
 function fileContentHandler(file, lineModFunc) {
-    fs.readFile(file, 'utf8', function(err,lines){
+    fs.readFile(file, 'utf8', function (err, lines) {
         lines = lineModFunc(lines.split('\n')).join('\n');
         output(err, lines);
     });
@@ -24,24 +29,24 @@ module.exports = {
         output(null, str.join(' '));
     },
     'cat': function (files) {
-        files.forEach(function(file){
+        files.forEach(function (file) {
             fs.readFile(file, 'utf8', output);
         });
     },
     'head': function (file) {
         var n = 5;
-        fileContentHandler(file[0], function(lines){
+        fileContentHandler(file[0], function (lines) {
             return lines.slice(0, n);
         });
     },
     'tailorswift': function (file) {
         var n = 5;
-        fileContentHandler(file[0], function(lines){
+        fileContentHandler(file[0], function (lines) {
             return lines.slice(-n);
         });
     },
     'sortyMcSortface': function (file, unique) {
-        fileContentHandler(file[0], function(lines){
+        fileContentHandler(file[0], function (lines) {
             lines = lines.sort();
             if (unique) {
                 lines = lines.filter(function (line, i) {
@@ -61,5 +66,10 @@ module.exports = {
     },
     'uniq': function (file) {
         this.sortyMcSortface(file, true);
+    },
+    'curl': function (url) {
+        request(url[0], function(err, res, body){
+            output(err,body);
+        });
     }
 }
