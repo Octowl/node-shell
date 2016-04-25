@@ -1,5 +1,6 @@
-// Output a prompt
 var commandList = require('./commands.js');
+
+// Output a prompt
 process.stdout.write('TYPE OVER HERE!!! > ');
 
 // The stdin 'data' event fires after a user types in a line
@@ -9,10 +10,9 @@ process.stdin.on('data', function (data) {
     var cmd = args[0];
     args = args.slice(1);
 
-    if(commandList[cmd]){
+    if (commandList[cmd]) {
         commandList[cmd](args);
-    }
-    else {
+    } else {
         process.stdout.write(cmd + ' is not a valid command');
     }
 });
