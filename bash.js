@@ -1,22 +1,18 @@
 // Output a prompt
+var commandList = require('./commands.js');
 process.stdout.write('TYPE OVER HERE!!! > ');
 
 // The stdin 'data' event fires after a user types in a line
 process.stdin.on('data', function (data) {
-  var cmd = data.toString().trim(); // remove the newline
-  var output = '';
+    var input = data.toString().trim(); // remove the newline
+    var args = input.split(' ');
+    var cmd = args[0];
+    args = args.slice(1);
 
-  switch (cmd) {
-      case 'pwd':
-          output = process.cwd();
-          break;
-      case 'date':
-          output = (new Date()).toString();
-          break;
-      default:
-          output = cmd + ' is not a valid command';
-  }
-
-  process.stdout.write(output);
-  process.stdout.write('\nTYPE OVER HERE!!! > ');
+    if(commandList[cmd]){
+        commandList[cmd](args);
+    }
+    else {
+        process.stdout.write(cmd + ' is not a valid command');
+    }
 });
