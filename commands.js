@@ -1,47 +1,42 @@
 var fs = require('fs');
+var request = require('request');
 
-function output(err, str) {
-    if (err) throw err;
-    process.stdout.write(str);
-    process.stdout.write('\nTYPE OVER HERE!!! > ');
-}
-
-function fileContentHandler(file, lineModFunc) {
-    fs.readFile(file, 'utf8', function(err,lines){
+function fileContentHandler(file, lineModFunc, done) {
+    fs.readFile(file, 'utf8', function (err, lines) {
         lines = lineModFunc(lines.split('\n')).join('\n');
-        output(err, lines);
+        done(err, lines);
     });
 }
 
 module.exports = {
-    'pwd': function () {
-        output(null, process.cwd());
+    'pwd': function (_, done) {
+        done(null, process.cwd());
     },
-    'date': function () {
-        output(null, (new Date()).toString());
+    'date': function (_, done) {
+        done(null, (new Date()).toString());
     },
-    'echo': function (str) {
-        output(null, str.join(' '));
+    'echo': function (str,done) {
+        done(null, str.join(' '));
     },
-    'cat': function (files) {
-        files.forEach(function(file){
-            fs.readFile(file, 'utf8', output);
+    'cat': function (files, done) {
+        files.forEach(function (file) {
+            fs.readFile(file, 'utf8', done);
         });
     },
-    'head': function (file) {
-        var n = 5;
-        fileContentHandler(file[0], function(lines){
+    'head': function (file, done) {
+        var n = file[1] || 5;
+        fileContentHandler(file[0], function (lines) {
             return lines.slice(0, n);
-        });
+        }, done);
     },
-    'tailorswift': function (file) {
-        var n = 5;
-        fileContentHandler(file[0], function(lines){
+    'tailorswift': function (file, done) {
+        var n = file[1] || 5;
+        fileContentHandler(file[0], function (lines) {
             return lines.slice(-n);
-        });
+        }, done);
     },
-    'sortyMcSortface': function (file, unique) {
-        fileContentHandler(file[0], function(lines){
+    'sortyMcSortface': function (file, done,  unique) {
+        fileContentHandler(file[0], function (lines) {
             lines = lines.sort();
             if (unique) {
                 lines = lines.filter(function (line, i) {
@@ -49,17 +44,22 @@ module.exports = {
                 });
             }
             return lines;
-        });
+        }, done);
     },
     //In Britannia the toilette is referred to as a 'WC' (Water Closet)
-    'toilet': function (file) {
-        file = file[0];
+    'toilet': function (file, done) {
         fs.readFile(file[0], 'utf8', function (err, str) {
+            if (err) throw err;
             var numLines = str.split('\n').length;
-            output(err, numLines.toString());
+            done(err, numLines.toString());
         });
     },
-    'uniq': function (file) {
-        this.sortyMcSortface(file, true);
+    'uniq': function (file, done) {
+        this.sortyMcSortface(file, done, true);
+    },
+    'curl': function (url, done) {
+        request(url[0], function(err, res, body){
+            done(err,body);
+        });
     }
 }
